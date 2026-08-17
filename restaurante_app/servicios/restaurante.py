@@ -32,7 +32,7 @@ class Restaurante:
     # ========== OPERACIONES DE PRODUCTOS ==========
     def registrar_producto(self, producto: Producto) -> str:
         if producto.codigo in self._productos_por_codigo:
-            return f"❌ Error: Ya existe producto con código {producto.codigo}"
+            return f" Error: Ya existe producto con código {producto.codigo}"
         
         self._productos.append(producto)
         self._productos_por_codigo[producto.codigo] = producto
