@@ -41,8 +41,8 @@ class Producto:
 
     @precio.setter
     def precio(self, valor: float) -> None:
-        if valor <= 0:
-            raise ValueError("El precio debe ser mayor a cero.")
+        if valor < 0:
+            raise ValueError("El precio no puede ser negativo.")
         self._precio = valor
 
     def __str__(self) -> str:
