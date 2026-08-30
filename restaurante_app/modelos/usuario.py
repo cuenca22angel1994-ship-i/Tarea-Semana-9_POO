@@ -32,8 +32,6 @@ class Usuario:
     def correo(self, valor: str) -> None:
         if not valor or not valor.strip():
             raise ValueError("El correo no puede estar vacío.")
-        if "@" not in valor:
-            raise ValueError("El correo no tiene un formato válido.")
         self._correo = valor.strip()
 
     def __str__(self) -> str:
