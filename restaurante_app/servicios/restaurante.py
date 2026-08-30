@@ -1,80 +1,70 @@
 from modelos.producto import Producto
 from modelos.usuario import Usuario
 
-class Restaurante:
-    """Servicio que administra productos y usuarios del sistema."""
 
+class Restaurante:
     def __init__(self) -> None:
-        #  LISTA: colecciones dinámicas que cambian en ejecución
+        # Lista → almacenamiento dinámico de objetos
         self._productos: list[Producto] = []
         self._usuarios: list[Usuario] = []
-
-        #  TUPLA: información FIJA, no se modifica
-        self._opciones_menu = (
-            "Registrar producto",
-            "Buscar producto",
-            "Actualizar producto",
-            "Eliminar producto",
-            "Listar productos",
-            "Registrar usuario",
-            "Listar usuarios",
-            "Mostrar categorías",
-            "Salir"
-        )
-
-        #  DICCIONARIO: relación clave → objeto para búsquedas rápidas
+        # Diccionario → búsqueda rápida por código (clave-valor)
         self._productos_por_codigo: dict[str, Producto] = {}
+        self._usuarios_por_id: dict[str, Usuario] = {}
 
-    @property
-    def opciones_menu(self) -> tuple:
-        return self._opciones_menu
-
-    # ========== OPERACIONES DE PRODUCTOS ==========
-    def registrar_producto(self, producto: Producto) -> str:
+    # ========== CRUD PRODUCTOS ==========
+    def registrar_producto(self, producto: Producto) -> bool:
         if producto.codigo in self._productos_por_codigo:
-            return f" Error: Ya existe producto con código {producto.codigo}"
-        
+            return False
         self._productos.append(producto)
         self._productos_por_codigo[producto.codigo] = producto
-        return f" Producto '{producto.nombre}' registrado."
+        return True
 
     def buscar_producto(self, codigo: str) -> Producto | None:
-        # Búsqueda instantánea con diccionario
-        return self._productos_por_codigo.get(codigo)
+        return self._productos_por_codigo.get(codigo.strip())
 
-    def actualizar_producto(self, codigo: str, nombre_nuevo: str, cat_nueva: str, precio_nuevo: float) -> str:
-        p = self.buscar_producto(codigo)
-        if not p:
-            return f" Producto {codigo} no encontrado."
-        
-        p._nombre = nombre_nuevo
-        p._categoria = cat_nueva
-        p.precio = precio_nuevo
-        return f" Producto {codigo} actualizado."
+    def actualizar_producto(
+        self,
+        codigo: str,
+        nuevo_nombre: str,
+        nueva_categoria: str,
+        nuevo_precio: float,
+    ) -> bool:
+        producto = self.buscar_producto(codigo)
+        if producto is None:
+            return False
+        producto.nombre = nuevo_nombre
+        producto.categoria = nueva_categoria
+        producto.precio = nuevo_precio
+        return True
 
-    def eliminar_producto(self, codigo: str) -> str:
-        p = self.buscar_producto(codigo)
-        if not p:
-            return f" Producto {codigo} no encontrado."
-        
-        self._productos.remove(p)
-        del self._productos_por_codigo[codigo]
-        return f" Producto {codigo} eliminado."
+    def eliminar_producto(self, codigo: str) -> bool:
+        producto = self.buscar_producto(codigo)
+        if producto is None:
+            return False
+        self._productos.remove(producto)
+        del self._productos_por_codigo[codigo.strip()]
+        return True
 
     def listar_productos(self) -> list[Producto]:
         return self._productos.copy()
 
-    # ========== OPERACIONES DE USUARIOS ==========
-    def registrar_usuario(self, usuario: Usuario) -> str:
-        if any(u.identificacion == usuario.identificacion for u in self._usuarios):
-            return f" Usuario con ID {usuario.identificacion} ya existe."
-        
+    # ========== GESTIÓN USUARIOS ==========
+    def registrar_usuario(self, usuario: Usuario) -> bool:
+        if usuario.identificacion in self._usuarios_por_id:
+            return False
         self._usuarios.append(usuario)
-        return f" Usuario '{usuario.nombre}' registrado."
+        self._usuarios_por_id[usuario.identificacion] = usuario
+        return True
+
+    def buscar_usuario(self, identificacion: str) -> Usuario | None:
+        return self._usuarios_por_id.get(identificacion.strip())
 
     def listar_usuarios(self) -> list[Usuario]:
         return self._usuarios.copy()
 
-    #  CONJUNTO: obtener valores ÚNICOS sin duplicados
+    # ========== ESTRUCTURA: CONJUNTO (valores únicos) ==========
     def obtener_categorias_unicas(self) -> set[str]:
-        return {producto.categoria for producto in self._productos}
+        categorias: set[str] = set()
+        for producto in self._productos:
+            categorias.add(producto.categoria)
+        return categorias
