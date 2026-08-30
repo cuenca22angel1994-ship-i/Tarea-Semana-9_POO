@@ -2,116 +2,165 @@ from modelos.producto import Producto
 from modelos.usuario import Usuario
 from servicios.restaurante import Restaurante
 
-def mostrar_menu(sistema: Restaurante) -> None:
-    print("\n" + "=" * 50)
-    print("        SISTEMA DE RESTAURANTE")
-    print("=" * 50)
-    for indice, opcion in enumerate(sistema.opciones_menu, 1):
-        print(f"{indice}. {opcion}")
-    print("-" * 50)
 
-def registrar_producto(sistema: Restaurante) -> None:
-    print("\n--- REGISTRAR PRODUCTO ---")
-    codigo = input("Código único: ").strip()
-    nombre = input("Nombre: ").strip()
-    categoria = input("Categoría: ").strip()
+# TUPLA → opciones fijas que no cambian en ejecución
+OPCIONES_MENU = (
+    ("1", "Registrar producto"),
+    ("2", "Buscar producto"),
+    ("3", "Actualizar producto"),
+    ("4", "Eliminar producto"),
+    ("5", "Listar productos"),
+    ("6", "Registrar usuario"),
+    ("7", "Listar usuarios"),
+    ("8", "Mostrar categorías únicas"),
+    ("0", "Salir"),
+)
 
+# DICCIONARIO → mapeo opción → función
+ACCIONES = {}
+
+
+def pedir_texto(mensaje: str) -> str:
+    return input(mensaje).strip()
+
+
+def mostrar_menu() -> None:
+    print("\n" + "=" * 40)
+    print("       SISTEMA DE RESTAURANTE")
+    print("=" * 40)
+    for numero, descripcion in OPCIONES_MENU:
+        print(f" {numero}. {descripcion}")
+    print("-" * 40)
+
+
+def registrar_producto(restaurante: Restaurante) -> None:
+    print("\n--- Registrar Producto ---")
+    codigo = pedir_texto("Código: ")
+    nombre = pedir_texto("Nombre: ")
+    categoria = pedir_texto("Categoría: ")
     try:
-        precio = float(input("Precio: $").strip())
-        if precio <= 0:
-            print(" El precio debe ser mayor a cero.")
-            return
-    except ValueError:
-        print(" Ingrese un número válido.")
-        return
-
-    producto = Producto(codigo, nombre, categoria, precio)
-    print(sistema.registrar_producto(producto))
-
-def buscar_producto(sistema: Restaurante) -> None:
-    print("\n--- BUSCAR PRODUCTO ---")
-    codigo = input("Código a buscar: ").strip()
-    p = sistema.buscar_producto(codigo)
-    if p:
-        print(" Encontrado:", p)
-    else:
-        print(" No encontrado.")
-
-def actualizar_producto(sistema: Restaurante) -> None:
-    print("\n--- ACTUALIZAR PRODUCTO ---")
-    codigo = input("Código a actualizar: ").strip()
-    nombre = input("Nuevo nombre: ").strip()
-    cat = input("Nueva categoría: ").strip()
-    try:
-        precio = float(input("Nuevo precio: $").strip())
-        if precio <= 0:
-            print(" Precio inválido.")
-            return
-    except ValueError:
-        print(" Número inválido.")
-        return
-
-    print(sistema.actualizar_producto(codigo, nombre, cat, precio))
-
-def eliminar_producto(sistema: Restaurante) -> None:
-    print("\n--- ELIMINAR PRODUCTO ---")
-    codigo = input("Código a eliminar: ").strip()
-    print(sistema.eliminar_producto(codigo))
-
-def listar_productos(sistema: Restaurante) -> None:
-    print("\n=== LISTA DE PRODUCTOS ===")
-    lista = sistema.listar_productos()
-    if not lista:
-        print("Sin productos registrados.")
-        return
-    for p in lista:
-        print(p)
-
-def registrar_usuario(sistema: Restaurante) -> None:
-    print("\n--- REGISTRAR USUARIO ---")
-    ide = input("Identificación: ").strip()
-    nombre = input("Nombre completo: ").strip()
-    correo = input("Correo: ").strip()
-    usuario = Usuario(ide, nombre, correo)
-    print(sistema.registrar_usuario(usuario))
-
-def listar_usuarios(sistema: Restaurante) -> None:
-    print("\n=== LISTA DE USUARIOS ===")
-    lista = sistema.listar_usuarios()
-    if not lista:
-        print("Sin usuarios registrados.")
-        return
-    for u in lista:
-        print(u)
-
-def mostrar_categorias(sistema: Restaurante) -> None:
-    print("\n--- CATEGORÍAS ÚNICAS ---")
-    cats = sistema.obtener_categorias_unicas()
-    if not cats:
-        print("Sin categorías.")
-        return
-    for c in sorted(cats):
-        print(f"• {c}")
-
-def main() -> None:
-    sistema = Restaurante()
-    while True:
-        mostrar_menu(sistema)
-        op = input("Seleccione opción: ").strip()
-
-        if op == "1": registrar_producto(sistema)
-        elif op == "2": buscar_producto(sistema)
-        elif op == "3": actualizar_producto(sistema)
-        elif op == "4": eliminar_producto(sistema)
-        elif op == "5": listar_productos(sistema)
-        elif op == "6": registrar_usuario(sistema)
-        elif op == "7": listar_usuarios(sistema)
-        elif op == "8": mostrar_categorias(sistema)
-        elif op == "9":
-            print("\n ¡Hasta luego!")
-            break
+        precio = float(pedir_texto("Precio: $"))
+        producto = Producto(codigo, nombre, categoria, precio)
+        if restaurante.registrar_producto(producto):
+            print(" Producto registrado correctamente.")
         else:
-            print("\n Opción inválida.")
+            print(" El código ya existe.")
+    except ValueError as err:
+        print(f" Error: {err}")
+
+
+def buscar_producto(restaurante: Restaurante) -> None:
+    print("\n--- Buscar Producto ---")
+    codigo = pedir_texto("Código del producto: ")
+    producto = restaurante.buscar_producto(codigo)
+    if producto:
+        print(f" {producto}")
+    else:
+        print(" Producto no encontrado.")
+
+
+def actualizar_producto(restaurante: Restaurante) -> None:
+    print("\n--- Actualizar Producto ---")
+    codigo = pedir_texto("Código del producto: ")
+    if not restaurante.buscar_producto(codigo):
+        print(" Producto no encontrado.")
+        return
+    nombre = pedir_texto("Nuevo nombre: ")
+    categoria = pedir_texto("Nueva categoría: ")
+    try:
+        precio = float(pedir_texto("Nuevo precio: $"))
+        if restaurante.actualizar_producto(codigo, nombre, categoria, precio):
+            print(" Producto actualizado.")
+    except ValueError as err:
+        print(f" Error: {err}")
+
+
+def eliminar_producto(restaurante: Restaurante) -> None:
+    print("\n--- Eliminar Producto ---")
+    codigo = pedir_texto("Código del producto: ")
+    if restaurante.eliminar_producto(codigo):
+        print(" Producto eliminado.")
+    else:
+        print(" Producto no encontrado.")
+
+
+def listar_productos(restaurante: Restaurante) -> None:
+    print("\n--- Lista de Productos ---")
+    productos = restaurante.listar_productos()
+    if not productos:
+        print("No hay productos registrados.")
+        return
+    for idx, prod in enumerate(productos, 1):
+        print(f"{idx}. {prod}")
+
+
+def registrar_usuario(restaurante: Restaurante) -> None:
+    print("\n--- Registrar Usuario ---")
+    identificacion = pedir_texto("Identificación: ")
+    nombre = pedir_texto("Nombre completo: ")
+    correo = pedir_texto("Correo electrónico: ")
+    try:
+        usuario = Usuario(identificacion, nombre, correo)
+        if restaurante.registrar_usuario(usuario):
+            print(" Usuario registrado correctamente.")
+        else:
+            print(" La identificación ya está registrada.")
+    except ValueError as err:
+        print(f" Error: {err}")
+
+
+def listar_usuarios(restaurante: Restaurante) -> None:
+    print("\n--- Lista de Usuarios ---")
+    usuarios = restaurante.listar_usuarios()
+    if not usuarios:
+        print("No hay usuarios registrados.")
+        return
+    for idx, usu in enumerate(usuarios, 1):
+        print(f"{idx}. {usu}")
+
+
+def mostrar_categorias(restaurante: Restaurante) -> None:
+    print("\n--- Categorías Únicas ---")
+    categorias = restaurante.obtener_categorias_unicas()
+    if not categorias:
+        print("No hay categorías registradas.")
+        return
+    for cat in sorted(categorias):
+        print(f"- {cat}")
+
+
+def ejecutar() -> None:
+    restaurante = Restaurante()
+
+    # Construir diccionario de acciones
+    global ACCIONES
+    ACCIONES = {
+        "1": registrar_producto,
+        "2": buscar_producto,
+        "3": actualizar_producto,
+        "4": eliminar_producto,
+        "5": listar_productos,
+        "6": registrar_usuario,
+        "7": listar_usuarios,
+        "8": mostrar_categorias,
+    }
+
+    while True:
+        mostrar_menu()
+        opcion = pedir_texto("Seleccione una opción: ")
+
+        if opcion == "0":
+            print("\n Gracias por usar el Sistema de Restaurante. ¡Hasta luego!")
+            break
+
+        funcion = ACCIONES.get(opcion)
+        if funcion:
+            funcion(restaurante)
+        else:
+            print(" Opción inválida. Intente nuevamente.")
+
+        input("\nPresione Enter para continuar...")
+
 
 if __name__ == "__main__":
-    main()
+    ejecutar()
