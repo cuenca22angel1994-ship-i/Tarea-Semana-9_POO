@@ -4,14 +4,11 @@ from modelos.usuario import Usuario
 
 class Restaurante:
     def __init__(self) -> None:
-        # Lista → almacenamiento dinámico de objetos
         self._productos: list[Producto] = []
         self._usuarios: list[Usuario] = []
-        # Diccionario → búsqueda rápida por código (clave-valor)
         self._productos_por_codigo: dict[str, Producto] = {}
-        self._usuarios_por_id: dict[str, Usuario] = {}
 
-    # ========== CRUD PRODUCTOS ==========
+    # === CRUD PRODUCTOS ===
     def registrar_producto(self, producto: Producto) -> bool:
         if producto.codigo in self._productos_por_codigo:
             return False
@@ -48,21 +45,24 @@ class Restaurante:
     def listar_productos(self) -> list[Producto]:
         return self._productos.copy()
 
-    # ========== GESTIÓN USUARIOS ==========
+    # === USUARIOS ===
     def registrar_usuario(self, usuario: Usuario) -> bool:
-        if usuario.identificacion in self._usuarios_por_id:
+        if self.buscar_usuario(usuario.identificacion) is not None:
             return False
         self._usuarios.append(usuario)
-        self._usuarios_por_id[usuario.identificacion] = usuario
         return True
 
     def buscar_usuario(self, identificacion: str) -> Usuario | None:
-        return self._usuarios_por_id.get(identificacion.strip())
+        identificacion = identificacion.strip()
+        for usuario in self._usuarios:
+            if usuario.identificacion == identificacion:
+                return usuario
+        return None
 
     def listar_usuarios(self) -> list[Usuario]:
         return self._usuarios.copy()
 
-    # ========== ESTRUCTURA: CONJUNTO (valores únicos) ==========
+    # === CATEGORÍAS ÚNICAS (conjunto) ===
     def obtener_categorias_unicas(self) -> set[str]:
         categorias: set[str] = set()
         for producto in self._productos:
